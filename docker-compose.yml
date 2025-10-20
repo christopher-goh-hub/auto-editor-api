@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  auto-editor-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auto-editor-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent storage for uploads and outputs (optional)
+      - ./data/uploads:/tmp/uploads
+      - ./data/outputs:/tmp/outputs
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
