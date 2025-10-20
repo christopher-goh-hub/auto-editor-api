@@ -1,14 +1,13 @@
-FROM python:3.11-alpine AS builder
+FROM --platform=linux/amd64 python:3.11-slim AS builder
 
 # Install build dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    musl-dev \
-    python3-dev \
+    g++ \
+    make \
     libffi-dev \
-    openssl-dev \
-    cargo \
-    rust
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment and install Python packages
 RUN python -m venv /opt/venv
@@ -18,13 +17,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Final stage
-FROM python:3.11-alpine
+FROM --platform=linux/amd64 python:3.11-slim
 
 # Install runtime dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    libgomp \
-    libstdc++
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
